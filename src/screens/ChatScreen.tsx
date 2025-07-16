@@ -1,133 +1,187 @@
 import { FloaterTabParamList } from '@/types/navigation';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
+import {
+  View,
+  FlatList,
+  StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
+import {
+  TextInput,
+  Button,
+  Surface,
+  Text,
+  Avatar,
+  Provider as PaperProvider,
+} from 'react-native-paper';
 
 interface Message {
-    id: string;
-    text: string;
-    sender: 'user' | 'bot';
+  id: string;
+  text: string;
+  sender: 'user' | 'bot';
+  timestamp: string;
 }
 
 type Props = NativeStackScreenProps<FloaterTabParamList, 'Chat'>;
 
+const ChatScreen: React.FC<Props> = ({ navigation }) => {
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState('');
 
-const ChatScreen: React.FC<Props> = ({navigation}) => {
-    const [messages, setMessages] = useState<Message[]>([]);
-    const [input, setInput] = useState('');
+  const sendMessage = () => {
+    if (input.trim() === '') return;
+    const timestamp = new Date().toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
 
-    const sendMessage = () => {
-        if (input.trim() === '') return;
-        const userMessage: Message = {
-            id: Date.now().toString(),
-            text: input,
-            sender: 'user',
-        };
-        setMessages(prev => [...prev, userMessage]);
-        setInput('');
-
-        // Simulate bot response
-        setTimeout(() => {
-            const botMessage: Message = {
-                id: (Date.now() + 1).toString(),
-                text: `Echo: ${userMessage.text}`,
-                sender: 'bot',
-            };
-            setMessages(prev => [...prev, botMessage]);
-        }, 500);
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      text: input,
+      sender: 'user',
+      timestamp,
     };
+    setMessages(prev => [...prev, userMessage]);
+    setInput('');
 
-    const renderItem = ({ item }: { item: Message }) => (
-        <View style={[
+    // Simulate bot response
+    setTimeout(() => {
+      const botMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        text: `Echo: ${userMessage.text}`,
+        sender: 'bot',
+        timestamp: new Date().toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit',
+        }),
+      };
+      setMessages(prev => [...prev, botMessage]);
+    }, 600);
+  };
+
+  const renderItem = ({ item }: { item: Message }) => {
+  const isUser = item.sender === 'user';
+    return (
+        <View
+        style={[
+            styles.messageWrapper,
+            isUser ? styles.alignRight : styles.alignLeft,
+        ]}
+        >
+        {!isUser && (
+            <Avatar.Text size={32} label="B" style={styles.avatar} />
+        )}
+        <Surface
+            style={[
             styles.messageContainer,
-            item.sender === 'user' ? styles.userMessage : styles.botMessage
-        ]}>
+            isUser ? styles.userMessage : styles.botMessage,
+            ]}
+            elevation={2}
+        >
             <Text style={styles.messageText}>{item.text}</Text>
+            <Text style={styles.timestamp}>{item.timestamp}</Text>
+        </Surface>
+        {isUser && (
+            <Avatar.Text size={32} label="U" style={styles.avatar} />
+        )}
         </View>
     );
+  };
 
-    return (
-        <KeyboardAvoidingView
-            style={styles.container}
-            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-            keyboardVerticalOffset={80}
+  return (
+    <KeyboardAvoidingView
+    style={styles.container}
+    behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    keyboardVerticalOffset={80}
+    >
+    <FlatList
+        data={messages}
+        renderItem={renderItem}
+        keyExtractor={item => item.id}
+        contentContainerStyle={styles.chatContainer}
+    />
+    <View style={styles.inputContainer}>
+        <TextInput
+        mode="outlined"
+        style={styles.input}
+        value={input}
+        onChangeText={setInput}
+        placeholder="Type a message..."
+        />
+        <Button
+        mode="contained"
+        onPress={sendMessage}
+        style={styles.sendButton}
+        contentStyle={{ height: 48 }}
         >
-            <FlatList
-                data={messages}
-                renderItem={renderItem}
-                keyExtractor={item => item.id}
-                contentContainerStyle={styles.chatContainer}
-            />
-            <View style={styles.inputContainer}>
-                <TextInput
-                    style={styles.input}
-                    value={input}
-                    onChangeText={setInput}
-                    placeholder="Type a message..."
-                />
-                <TouchableOpacity style={styles.sendButton} onPress={sendMessage}>
-                    <Text style={styles.sendButtonText}>Send</Text>
-                </TouchableOpacity>
-            </View>
-        </KeyboardAvoidingView>
-    );
+        Send
+        </Button>
+    </View>
+    </KeyboardAvoidingView>
+  );
 };
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#fff',
-    },
-    chatContainer: {
-        padding: 16,
-    },
-    messageContainer: {
-        marginVertical: 4,
-        padding: 10,
-        borderRadius: 8,
-        maxWidth: '80%',
-    },
-    userMessage: {
-        backgroundColor: '#DCF8C6',
-        alignSelf: 'flex-end',
-    },
-    botMessage: {
-        backgroundColor: '#EAEAEA',
-        alignSelf: 'flex-start',
-    },
-    messageText: {
-        fontSize: 16,
-    },
-    inputContainer: {
-        flexDirection: 'row',
-        padding: 8,
-        borderTopWidth: 1,
-        borderColor: '#eee',
-        backgroundColor: '#fafafa',
-    },
-    input: {
-        flex: 1,
-        borderWidth: 1,
-        borderColor: '#ddd',
-        borderRadius: 20,
-        paddingHorizontal: 12,
-        paddingVertical: 8,
-        fontSize: 16,
-        backgroundColor: '#fff',
-    },
-    sendButton: {
-        marginLeft: 8,
-        backgroundColor: '#007AFF',
-        borderRadius: 20,
-        paddingHorizontal: 16,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    sendButtonText: {
-        color: '#fff',
-        fontWeight: 'bold',
-        fontSize: 16,
-    },
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  chatContainer: {
+    padding: 12,
+  },
+  messageWrapper: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    marginVertical: 6,
+    maxWidth: '80%',
+  },
+  alignLeft: {
+    alignSelf: 'flex-start',
+  },
+  alignRight: {
+    alignSelf: 'flex-end',
+    flexDirection: 'row-reverse',
+  },
+  messageContainer: {
+    padding: 10,
+    borderRadius: 8,
+    backgroundColor: '#fff',
+  },
+  userMessage: {
+    backgroundColor: '#D1EDC1',
+  },
+  botMessage: {
+    backgroundColor: '#EAEAEA',
+  },
+  messageText: {
+    fontSize: 16,
+  },
+  timestamp: {
+    fontSize: 12,
+    color: '#555',
+    marginTop: 4,
+    textAlign: 'right',
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    padding: 10,
+    borderTopWidth: 1,
+    borderColor: '#eee',
+    backgroundColor: '#fafafa',
+    alignItems: 'center',
+  },
+  input: {
+    flex: 1,
+    marginRight: 8,
+  },
+  sendButton: {
+    borderRadius: 20,
+  },
+  avatar: {
+    marginHorizontal: 6,
+  },
 });
 
 export default ChatScreen;

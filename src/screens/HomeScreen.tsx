@@ -30,10 +30,11 @@ const HomeScreen: React.FC<Props> = ({navigation}) => {
                     ))
                 }
             </View>
-            <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-                <MaterialIcons name="business" size={48} color="tomato" />
+            <View style={{flex: 1, flexDirection: "row",  justifyContent: 'center', alignItems: 'center'}}>                
+                <Button mode='contained' onPress={() => navigation.navigate('Floater')}>Floater</Button>
+                <Button mode='contained' onPress={() => navigation.navigate('Admin')}>Admin</Button>
+                <Button mode='contained' onPress={() => navigation.navigate('Guest')}>Guest</Button>
             </View>
-            <Button mode='contained' onPress={() => navigation.navigate('Floater')}>Go to </Button>
         </SafeAreaView>
     );
 };

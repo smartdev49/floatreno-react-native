@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet} from 'react-native';
 import { Card, Paragraph, Avatar } from 'react-native-paper';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
 type UserCardProps = {
     title?: string;
@@ -11,7 +12,7 @@ type UserCardProps = {
 };
 
 const UserCard: React.FC<UserCardProps> = ({ title, content, icon, selected = false, onSelect}) => {
-    const Icon = (props: any) => <Avatar.Icon {...props} icon={icon} />;
+    const Icon = (props: any) => <MaterialIcons name={icon!!} size={32}/>;
 
     return (
         <Card style={[styles.card, selected && styles.selected]} onPress={onSelect}>

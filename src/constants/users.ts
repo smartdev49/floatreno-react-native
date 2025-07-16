@@ -20,8 +20,8 @@ export type UserTypeMeta = {
 };
 
 export const USER_TYPE_METAS: UserTypeMeta[] = [
-    {id: 0, icon: "", title: "Admin", content: ""},
-    {id: 1, icon: "", title: "Float Master", content: ""},
-    {id: 2, icon: "", title: "Floater", content: ""},
-    {id: 3, icon: "", title: "Guest", content: ""},
+    {id: 0, icon: "manage-accounts", title: "Admin", content: "Admin"},
+    {id: 1, icon: "leaderboard", title: "Float Master", content: "Master"},
+    {id: 2, icon: "user", title: "Floater", content: "Floater"},
+    {id: 3, icon: "guest", title: "Guest", content: "Guest"},
 ]
