@@ -5,24 +5,34 @@
  * @format
  */
 
-import { NewAppScreen } from '@react-native/new-app-screen';
-import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
+import {Provider as PaperProvider} from 'react-native-paper';
+import * as React from 'react';
+
+import {NavigationContainer} from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+
+import { RootStackParamList } from '@/types/navigation';
+
+import HomeScreen from '@/screens/HomeScreen';
+import LoginScreen from "@/screens/LoginScreen";
+import SignupScreen from "@/screens/SignupScreen";
+import FloaterTabs from '@/navigation/FloaterTabs';
+
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function App() {
-  const isDarkMode = useColorScheme() === 'dark';
-
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <NewAppScreen templateFileName="App.tsx" />
-    </View>
+    <PaperProvider>
+      <NavigationContainer>
+        <Stack.Navigator initialRouteName='Home'>
+          <Stack.Screen name='Home' component={HomeScreen} options={{headerShown: false}} />
+          <Stack.Screen name='Login' component={LoginScreen} options={{headerShown: false}}/>
+          <Stack.Screen name='Signup' component={SignupScreen} options={{headerShown: false}}/>
+          <Stack.Screen name='Floater' component={FloaterTabs} options={{headerShown: false}}/>
+        </Stack.Navigator>
+      </NavigationContainer>
+    </PaperProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
 
 export default App;
