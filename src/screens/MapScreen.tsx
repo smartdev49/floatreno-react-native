@@ -1,45 +1,59 @@
 import React, { useEffect, useState } from 'react';
 import { PermissionsAndroid, Platform, StyleSheet, View } from 'react-native';
-import MapView, { Marker, UrlTile } from 'react-native-maps';
+import MapView, { Marker, Region } from 'react-native-maps';
 
-import Geolocation from 'react-native-geolocation-service';
+import Geolocation, { GeolocationResponse } from '@react-native-community/geolocation';
+
+interface Coordinates {
+    latitude: number;
+    longitude: number
+}
 
 const MapScreen: React.FC = () => {
 
-    const [location, setLocation] = useState<{
-        latitude: number;
-        longitude: number;
-        altitude?: number | null;
-        accuracy?: number | null;
-        altitudeAccuracy?: number | null;
-        heading?: number | null;
-        speed?: number | null;
-    } | null>(null);
+    const [location, setLocation] = useState<Coordinates | null>(null);
 
     const requestLocationPermission = async () => {
         if (Platform.OS === 'android') {
-            const granted = await PermissionsAndroid.request(
-                PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-            );
-            return granted === PermissionsAndroid.RESULTS.GRANTED;
+            try {
+                const granted = await PermissionsAndroid.request(
+                    PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+                );
+                return granted === PermissionsAndroid.RESULTS.GRANTED;
+            } catch (err) {
+                console.warn(err);
+                return false;
+            }
         }
         return true;
     }
-    useEffect(() => {
-        (async () => {
-            const hasPermission = await requestLocationPermission();
-            if (!hasPermission) return;
+    const startLocationTracking = async () => {
+        const hasPermission = await requestLocationPermission();
+        if (!hasPermission) {
+            console.warn("Permission denied", "Cannot access location.");
+            return;
+        }
 
-            Geolocation.getCurrentPosition(
-                position => {
-                    return setLocation(position.coords);
-                },
-                error => {
-                    console.error(error);
-                },
-                { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
-            );
-        })();
+        Geolocation.getCurrentPosition(
+            (position: GeolocationResponse) => {
+                const { latitude, longitude } = position.coords;
+                setLocation({ latitude, longitude });
+            },
+            error => console.error(error),
+            { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+        );
+
+        Geolocation.watchPosition(
+            position => {
+                const { latitude, longitude } = position.coords;
+                setLocation({ latitude, longitude });
+            },
+            error => console.error(error),
+            { enableHighAccuracy: true, distanceFilter: 10 }
+        );
+    };
+    useEffect(() => {
+        startLocationTracking();
     }, [])
     const initialRegion = {
         latitude: 37.78825,
@@ -47,20 +61,20 @@ const MapScreen: React.FC = () => {
         latitudeDelta: 0.0922,
         longitudeDelta: 0.0421,
     };
+    const region: Region | undefined = location
+    ? {
+        ...location,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+      }
+    : undefined;
 
     return (
         <View style={styles.container}>
-            <MapView style={styles.map} initialRegion={initialRegion} 
-                    showsUserLocation>
-                <UrlTile
-                    /* OpenStreetMap tile server (fair use only)
-                     * You can replace this with another provider
-                     */
-                    urlTemplate="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    maximumZ={19}
-                    flipY={false}
-                />
-                {location && <Marker coordinate={{ latitude: location.latitude, longitude: location.longitude }} />}
+            <MapView style={styles.map} initialRegion={initialRegion}
+                showsUserLocation>
+                
+                {location && <Marker coordinate={location!} title='You are here'/>}
             </MapView>
         </View>
     );
