@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, Alert, TouchableOpacity, Image } from 'react-native';
-import { Text, TextInput, Button, Card } from 'react-native-paper';
+import React, { useEffect, useState } from 'react';
+import { View, StyleSheet, Alert } from 'react-native';
+import { Text, TextInput, Button } from 'react-native-paper';
 
+import useAuthStore from '@/store/useAuthStore';
 //
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '@/types/navigation';
+
+import {ActivityIndicator} from 'react-native-paper';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
@@ -12,14 +15,25 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
 const LoginScreen: React.FC<Props> = ({navigation}) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const {login, isLoggedIn, isLoading, autoLogin} = useAuthStore();
 
-    const handleLogin = () => {
-        navigation.navigate("Home");
-        // if (email && password) {
-        //     Alert.alert('Login Successful', `Welcome, ${email}!`);
-        // } else {
-        //     Alert.alert('Error', 'Please enter email and password.');
-        // }
+    useEffect(() => {
+        const checkLogin = async () => {
+            if (isLoggedIn) {
+                navigation.navigate("Home");
+            } else {
+                await autoLogin();
+            }
+        };
+        checkLogin();
+    }, [isLoggedIn])
+
+    const handleLogin = async() => {
+        try {
+            await login(email, password);
+        } catch (e) {
+            console.log('Login Failed');
+        }
     };
 
     return (
@@ -46,7 +60,7 @@ const LoginScreen: React.FC<Props> = ({navigation}) => {
             </View>
             <View>
                 <Button mode="contained" onPress={handleLogin} style={styles.button}>
-                    Login
+                    {isLoading ? <ActivityIndicator animating={true} /> : "Login"}
                 </Button>
                 <Button
                     mode="text"

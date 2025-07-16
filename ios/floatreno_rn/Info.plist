@@ -69,5 +69,10 @@
 		<string>SimpleLineIcons.ttf</string>
 		<string>Zocial.ttf</string>
 	</array>
+
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>We need your location to show you on the map.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>We use your location to track movement.</string>
 </dict>
 </plist>

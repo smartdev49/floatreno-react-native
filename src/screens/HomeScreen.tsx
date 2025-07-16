@@ -5,18 +5,26 @@ import UserCard from '@/components/UserCard';
 import { USER_TYPE_METAS, UserTypeMeta } from '@/constants/users';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '@/types/navigation';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import useAuthStore from '@/store/useAuthStore';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
 const HomeScreen: React.FC<Props> = ({navigation}) => {
-    const [isLoggedIn, setLoggedIn] = React.useState<boolean>(false);
+    
+    const {isLoggedIn, logout} = useAuthStore();
     const [userType, setUserType] = React.useState<number>(0);
     React.useEffect(() => {
-        // if (!isLoggedIn) {
-        //     navigation.navigate('Login')
-        // }
-    }, []);
+        if (!isLoggedIn) {
+            navigation.navigate('Login')
+        }
+    }, [isLoggedIn]);
+    const handleLogout = async() => {
+        try {
+            await logout();
+        } catch (e) {
+            console.log('Login Failed');
+        }
+    };
     return (
         <SafeAreaView style={styles.container}>
             <Card>
@@ -30,10 +38,11 @@ const HomeScreen: React.FC<Props> = ({navigation}) => {
                     ))
                 }
             </View>
-            <View style={{flex: 1, flexDirection: "row",  justifyContent: 'center', alignItems: 'center'}}>                
+            <View style={{flexDirection: "row",  justifyContent: 'center', alignItems: 'center'}}>                
                 <Button mode='contained' onPress={() => navigation.navigate('Floater')}>Floater</Button>
                 <Button mode='contained' onPress={() => navigation.navigate('Admin')}>Admin</Button>
                 <Button mode='contained' onPress={() => navigation.navigate('Guest')}>Guest</Button>
+                <Button mode='contained' onPress={() => handleLogout()}>Logout</Button>
             </View>
         </SafeAreaView>
     );
